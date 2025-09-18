@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requisition Coverage Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .report-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .report-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .report-output {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .copy-button {
+            background: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .copy-button:hover {
+            background: #218838;
+        }
+        
+        .copy-button.copied {
+            background: #17a2b8;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .list-frame {
+            border: 2px solid #007bff;
+            border-radius: 6px;
+            padding: 20px;
+            background: white;
+        }
+        
+        .list-header {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 4px 4px 0 0;
+            font-weight: bold;
+        }
+        
+        .two-column-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .column-section {
+            min-height: 200px;
+        }
+        
+        .column-header {
+            background: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .active-column .column-header {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .on-hold-column .column-header {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .requisition-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: box-shadow 0.3s;
+            cursor: move;
+            position: relative;
+        }
+        
+        .requisition-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .requisition-item.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+        
+        .requisition-item.drag-over {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        
+        .drag-handle {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            color: #999;
+            font-size: 18px;
+            cursor: move;
+        }
+        
+        .req-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .req-number {
+            font-weight: bold;
+            color: #007bff;
+            font-size: 18px;
+        }
+        
+        .req-job-title {
+            color: #495057;
+            font-size: 14px;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+        
+        .req-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: #28a745;
+        }
+        
+        .toggle-switch.on-hold {
+            background: #ffc107;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        
+        .toggle-switch.active .toggle-slider,
+        .toggle-switch.on-hold .toggle-slider {
+            transform: translateX(30px);
+        }
+        
+        .toggle-label {
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        
+        .last-action {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .req-notes {
+            color: #666;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .req-notes-section {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .req-notes-section h4 {
+            margin: 0 0 8px 0;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .req-notes-section textarea {
+            width: 100%;
+            min-height: 60px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 13px;
+            resize: vertical;
+        }
+        
+        .checkboxes {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            transform: scale(1.2);
+        }
+        
+        .checkbox-group label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .summary {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .summary h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid #ced4da;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Requisition Coverage Tracker</h1>
+        
+        <div class="form-section">
+            <form id="requisitionForm">
+                <div class="form-group">
+                    <label for="reqNumber">4-Digit Requisition Number:</label>
+                    <input type="text" id="reqNumber" maxlength="4" pattern="[0-9]{4}" placeholder="e.g., 1234" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="jobTitle">Job Title:</label>
+                    <input type="text" id="jobTitle" placeholder="e.g., Senior Software Engineer" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notes:</label>
+                    <textarea id="notes" placeholder="Enter any relevant notes or comments..."></textarea>
+                </div>
+                
+                <button type="submit">Add Requisition</button>
+            </form>
+        </div>
+        
+        <div class="report-section">
+            <h2>Summary Report</h2>
+            <div class="report-buttons">
+                <button type="button" onclick="generateReport()">Generate Report</button>
+                <button type="button" class="copy-button" id="copyButton" onclick="copyReport()" style="display: none;">Copy to Clipboard</button>
+            </div>
+            <div id="reportOutput" class="report-output"></div>
+        </div>
+        
+        <div class="list-frame">
+            <div class="list-header">Requisition Entries</div>
+            <div class="two-column-layout">
+                <div class="column-section active-column">
+                    <div class="column-header">Active Requisitions</div>
+                    <div id="activeRequisitions"></div>
+                </div>
+                <div class="column-section on-hold-column">
+                    <div class="column-header">On Hold Requisitions</div>
+                    <div id="onHoldRequisitions"></div>
+                </div>
+            </div>
+            
+            <div class="summary">
+                <h3>Summary</h3>
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalCount">0</div>
+                        <div class="stat-label">Total Entries</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="reviewedCount">0</div>
+                        <div class="stat-label">Reviewed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="noActionCount">0</div>
+                        <div class="stat-label">No Further Action</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="activeCount">0</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="onHoldCount">0</div>
+                        <div class="stat-label">On Hold</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="offerCount">0</div>
+                        <div class="stat-label">Offers Requested</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let requisitions = [];
+        let idCounter = 1;
+
+        function addRequisition() {
+            const reqNumber = document.getElementById('reqNumber').value.trim();
+            const jobTitle = document.getElementById('jobTitle').value.trim();
+            const notes = document.getElementById('notes').value.trim();
+            
+            if (!reqNumber) {
+                alert('Please enter a 4-digit requisition number.');
+                return;
+            }
+            
+            if (!/^\d{4}$/.test(reqNumber)) {
+                alert('Requisition number must be exactly 4 digits.');
+                return;
+            }
+            
+            if (!jobTitle) {
+                alert('Please enter a job title.');
+                return;
+            }
+            
+            // Check for duplicate requisition numbers
+            if (requisitions.some(req => req.number === reqNumber)) {
+                alert('This requisition number already exists.');
+                return;
+            }
+            
+            const requisition = {
+                id: idCounter++,
+                number: reqNumber,
+                jobTitle: jobTitle,
+                notes: notes,
+                reviewed: false,
+                noAction: false,
+                offerRequested: false,
+                status: 'active', // 'active' or 'on-hold'
+                lastActionDate: new Date().toLocaleDateString(),
+                additionalNotes: '',
+                timestamp: new Date()
+            };
+            
+            requisitions.push(requisition);
+            renderRequisitions();
+            updateSummary();
+            
+            // Clear form
+            document.getElementById('reqNumber').value = '';
+            document.getElementById('jobTitle').value = '';
+            document.getElementById('notes').value = '';
+        }
+
+        function renderRequisitions() {
+            const activeContainer = document.getElementById('activeRequisitions');
+            const onHoldContainer = document.getElementById('onHoldRequisitions');
+            
+            const activeReqs = requisitions.filter(req => req.status === 'active');
+            const onHoldReqs = requisitions.filter(req => req.status === 'on-hold');
+            
+            activeContainer.innerHTML = activeReqs.length === 0 
+                ? '<div class="empty-state">No active requisitions</div>'
+                : activeReqs.map(req => createRequisitionElement(req)).join('');
+                
+            onHoldContainer.innerHTML = onHoldReqs.length === 0 
+                ? '<div class="empty-state">No requisitions on hold</div>'
+                : onHoldReqs.map(req => createRequisitionElement(req)).join('');
+        }
+
+        function createRequisitionElement(req) {
+            return `
+                <div class="requisition-item" draggable="true" data-id="${req.id}">
+                    <div class="drag-handle">⋮⋮</div>
+                    <div class="req-header">
+                        <div class="req-number">Requisition #${req.number}</div>
+                        <div class="req-status">
+                            <div class="toggle-switch ${req.status}" onclick="toggleStatus(${req.id})">
+                                <div class="toggle-slider"></div>
+                            </div>
+                            <span class="toggle-label">${req.status === 'active' ? 'Active' : 'On Hold'}</span>
+                        </div>
+                    </div>
+                    <div class="req-job-title">Position: ${req.jobTitle}</div>
+                    <div class="last-action">Last Action: ${req.lastActionDate}</div>
+                    <div class="req-notes">${req.notes || 'No initial notes provided'}</div>
+                    
+                    <div class="req-notes-section">
+                        <h4>Additional Notes:</h4>
+                        <textarea placeholder="Add additional notes here..." 
+                                  onblur="updateAdditionalNotes(${req.id}, this.value)">${req.additionalNotes}</textarea>
+                    </div>
+                    
+                    <div class="checkboxes">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="reviewed_${req.id}" ${req.reviewed ? 'checked' : ''} 
+                                   onchange="updateRequisition(${req.id}, 'reviewed', this.checked)">
+                            <label for="reviewed_${req.id}">Reviewed</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="noaction_${req.id}" ${req.noAction ? 'checked' : ''} 
+                                   onchange="updateRequisition(${req.id}, 'noAction', this.checked)">
+                            <label for="noaction_${req.id}">No Further Action</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="offer_${req.id}" ${req.offerRequested ? 'checked' : ''} 
+                                   onchange="updateRequisition(${req.id}, 'offerRequested', this.checked)">
+                            <label for="offer_${req.id}">Offer Requested</label>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateRequisition(id, field, value) {
+            const requisition = requisitions.find(req => req.id === id);
+            if (requisition) {
+                requisition[field] = value;
+                requisition.lastActionDate = new Date().toLocaleDateString();
+                updateSummary();
+            }
+        }
+
+        function toggleStatus(id) {
+            const requisition = requisitions.find(req => req.id === id);
+            if (requisition) {
+                requisition.status = requisition.status === 'active' ? 'on-hold' : 'active';
+                requisition.lastActionDate = new Date().toLocaleDateString();
+                renderRequisitions();
+                updateSummary();
+            }
+        }
+
+        function updateAdditionalNotes(id, notes) {
+            const requisition = requisitions.find(req => req.id === id);
+            if (requisition) {
+                requisition.additionalNotes = notes;
+                requisition.lastActionDate = new Date().toLocaleDateString();
+            }
+        }
+
+        function updateSummary() {
+            const total = requisitions.length;
+            const reviewed = requisitions.filter(req => req.reviewed).length;
+            const noAction = requisitions.filter(req => req.noAction).length;
+            const offerRequested = requisitions.filter(req => req.offerRequested).length;
+            const active = requisitions.filter(req => req.status === 'active').length;
+            const onHold = requisitions.filter(req => req.status === 'on-hold').length;
+            
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('reviewedCount').textContent = reviewed;
+            document.getElementById('noActionCount').textContent = noAction;
+            document.getElementById('activeCount').textContent = active;
+            document.getElementById('onHoldCount').textContent = onHold;
+            document.getElementById('offerCount').textContent = offerRequested;
+        }
+
+        // Form submission handler
+        document.getElementById('requisitionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addRequisition();
+        });
+
+        // Input validation for requisition number
+        document.getElementById('reqNumber').addEventListener('input', function(e) {
+            // Only allow digits
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        // Initialize
+        renderRequisitions();
+        updateSummary();
+        setupDragAndDrop();
+
+        // Drag and Drop functionality
+        function setupDragAndDrop() {
+            const activeContainer = document.getElementById('activeRequisitions');
+            const onHoldContainer = document.getElementById('onHoldRequisitions');
+            
+            [activeContainer, onHoldContainer].forEach(container => {
+                container.addEventListener('dragstart', handleDragStart);
+                container.addEventListener('dragover', handleDragOver);
+                container.addEventListener('drop', handleDrop);
+                container.addEventListener('dragend', handleDragEnd);
+            });
+        }
+
+        let draggedElement = null;
+        let sourceColumn = null;
+
+        function handleDragStart(e) {
+            if (e.target.classList.contains('requisition-item')) {
+                draggedElement = e.target;
+                sourceColumn = e.target.parentElement.id;
+                e.target.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', e.target.outerHTML);
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            const container = e.currentTarget;
+            const afterElement = getDragAfterElement(container, e.clientY);
+            const dragging = document.querySelector('.dragging');
+            
+            if (afterElement == null) {
+                container.appendChild(dragging);
+            } else {
+                container.insertBefore(dragging, afterElement);
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            
+            const targetColumn = e.currentTarget.id;
+            const draggedId = parseInt(draggedElement.dataset.id);
+            const requisition = requisitions.find(req => req.id === draggedId);
+            
+            if (requisition && targetColumn !== sourceColumn) {
+                // Update status based on target column
+                requisition.status = targetColumn === 'activeRequisitions' ? 'active' : 'on-hold';
+                requisition.lastActionDate = new Date().toLocaleDateString();
+                updateSummary();
+            }
+            
+            // Update the requisitions array order based on DOM order
+            const activeItems = document.querySelectorAll('#activeRequisitions .requisition-item');
+            const onHoldItems = document.querySelectorAll('#onHoldRequisitions .requisition-item');
+            const allItems = [...activeItems, ...onHoldItems];
+            
+            const newOrder = allItems.map(item => {
+                const id = parseInt(item.dataset.id);
+                return requisitions.find(req => req.id === id);
+            });
+            
+            requisitions = newOrder;
+        }
+
+        function handleDragEnd(e) {
+            if (e.target.classList.contains('requisition-item')) {
+                e.target.classList.remove('dragging');
+                draggedElement = null;
+                sourceColumn = null;
+            }
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.requisition-item:not(.dragging)')];
+            
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        // Report Generation Functions
+        function generateReport() {
+            if (requisitions.length === 0) {
+                alert('No requisitions to report on. Please add some requisitions first.');
+                return;
+            }
+
+            const currentDate = new Date().toLocaleDateString();
+            const currentTime = new Date().toLocaleTimeString();
+            
+            let report = `REQUISITION COVERAGE TRACKER - STATUS REPORT
+Generated: ${currentDate} at ${currentTime}
+${'='.repeat(60)}
+
+SUMMARY STATISTICS:
+• Total Requisitions: ${requisitions.length}
+• Reviewed: ${requisitions.filter(req => req.reviewed).length}
+• No Further Action: ${requisitions.filter(req => req.noAction).length}
+• Offers Requested: ${requisitions.filter(req => req.offerRequested).length}
+• Active Status: ${requisitions.filter(req => req.status === 'active').length}
+• On Hold Status: ${requisitions.filter(req => req.status === 'on-hold').length}
+
+${'='.repeat(60)}
+
+DETAILED REQUISITION STATUS:
+
+`;
+
+            requisitions.forEach((req, index) => {
+                const statusEmoji = req.status === 'active' ? '🟢' : '🟡';
+                const reviewedStatus = req.reviewed ? '✅' : '❌';
+                const noActionStatus = req.noAction ? '✅' : '❌';
+                const offerStatus = req.offerRequested ? '✅' : '❌';
+                
+                report += `${index + 1}. REQUISITION #${req.number} ${statusEmoji}
+   Job Title: ${req.jobTitle}
+   Status: ${req.status.toUpperCase()}
+   Last Action: ${req.lastActionDate}
+   
+   Checkboxes:
+   • Reviewed: ${reviewedStatus}
+   • No Further Action: ${noActionStatus}
+   • Offer Requested: ${offerStatus}
+   
+   Initial Notes: ${req.notes || 'None provided'}
+   
+   Additional Notes: ${req.additionalNotes || 'None'}
+   
+${'-'.repeat(50)}
+
+`;
+            });
+
+            report += `END OF REPORT
+Generated by Requisition Coverage Tracker
+Total Items: ${requisitions.length}`;
+
+            document.getElementById('reportOutput').textContent = report;
+            document.getElementById('reportOutput').style.display = 'block';
+            document.getElementById('copyButton').style.display = 'inline-block';
+            
+            // Reset copy button text if it was previously used
+            const copyButton = document.getElementById('copyButton');
+            copyButton.textContent = 'Copy to Clipboard';
+            copyButton.classList.remove('copied');
+        }
+
+        async function copyReport() {
+            const reportText = document.getElementById('reportOutput').textContent;
+            const copyButton = document.getElementById('copyButton');
+            
+            try {
+                await navigator.clipboard.writeText(reportText);
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy to Clipboard';
+                    copyButton.classList.remove('copied');
+                }, 2000);
+                
+            } catch (err) {
+                // Fallback for browsers that don't support clipboard API
+                const textArea = document.createElement('textarea');
+                textArea.value = reportText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    copyButton.textContent = 'Copied!';
+                    copyButton.classList.add('copied');
+                    
+                    setTimeout(() => {
+                        copyButton.textContent = 'Copy to Clipboard';
+                        copyButton.classList.remove('copied');
+                    }, 2000);
+                } catch (fallbackErr) {
+                    alert('Copy failed. Please manually select and copy the text.');
+                }
+                
+                document.body.removeChild(textArea);
+            }
+        }
+    </script>
+</body>
+</html>
