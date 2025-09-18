@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salary Analysis Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle.active {
+            background: #4CAF50;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        
+        .toggle.active .toggle-slider {
+            transform: translateX(30px);
+        }
+        
+        .summary {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .summary h3 {
+            margin-bottom: 10px;
+            color: #2e7d32;
+        }
+        
+        .summary-row {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+            font-weight: bold;
+        }
+        
+        .wage-entries-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .wage-entries-section h4 {
+            margin-bottom: 10px;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .wage-entries-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        .wage-entries-table th {
+            background: #e9ecef;
+            padding: 6px 8px;
+            text-align: left;
+            border: 1px solid #dee2e6;
+            font-weight: bold;
+        }
+        
+        .wage-entries-table td {
+            padding: 4px 8px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+        
+        .wage-entries-table td:first-child {
+            text-align: left;
+        }
+        
+        .data-sources {
+            margin-bottom: 20px;
+        }
+        
+        .source {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+        
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .source-header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        
+        .source-header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .source-date {
+            font-size: 14px;
+        }
+        
+        .age-toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+        
+        .mini-toggle {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: #ccc;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .mini-toggle.active {
+            background: #4CAF50;
+        }
+        
+        .mini-toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        
+        .mini-toggle.active .mini-toggle-slider {
+            transform: translateX(20px);
+        }
+        
+        .source-name {
+            font-weight: bold;
+            font-size: 16px;
+            flex: 1;
+            margin-right: 15px;
+            min-width: 300px;
+        }
+        
+        .remove-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .remove-btn:hover {
+            background: #cc0000;
+        }
+        
+        .duplicate-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        
+        .duplicate-btn:hover {
+            background: #1976D2;
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr 120px;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .data-grid-no-action {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .data-row {
+            display: contents;
+        }
+        
+        .grid-header {
+            font-weight: bold;
+            background: #e0e0e0;
+            padding: 8px;
+            text-align: center;
+            border-radius: 4px;
+        }
+        
+        input[type="text"], input[type="number"], input[type="date"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .add-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .add-btn:hover {
+            background: #45a049;
+        }
+        
+        .internal-equity {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+        }
+        
+        .internal-equity h3 {
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        .equity-summary {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .output-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+        }
+        
+        .output-section h3 {
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        .output-box {
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            min-height: 100px;
+            user-select: all;
+        }
+        
+        .output-box table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .output-box th, .output-box td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .row-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .source-name {
+                min-width: 200px;
+            }
+            .data-grid, .summary-row {
+                grid-template-columns: 1fr;
+            }
+            .source-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        .toggle, .mini-toggle, .add-btn, .remove-btn, .duplicate-btn {
+            transition: all 0.3s ease;
+        }
+        .toggle:focus, .mini-toggle:focus, .add-btn:focus, .remove-btn:focus, .duplicate-btn:focus {
+            outline: 2px solid #4CAF50;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Salary Analysis Tool</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 20px; font-style: italic;">
+            Reach out to bhooser@mybrio.org if you have questions about this tool
+        </p>
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+            <label style="font-weight: bold; margin-right: 10px;" for="mainJobTitle">Job Title for Analysis:</label>
+            <input type="text" id="mainJobTitle" placeholder="Enter job title" 
+                   style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; min-width: 300px;"
+                   onchange="updateOutput()">
+        </div>
+        
+        <div class="controls">
+            <div class="toggle-group">
+                <span>Not Tiered</span>
+                <div class="toggle" id="tieredToggle" onclick="toggleTiered()" role="switch" aria-checked="false" tabindex="0">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span>Tiered</span>
+            </div>
+            
+            <div class="toggle-group">
+                <span>Annual</span>
+                <div class="toggle" id="hourlyToggle" onclick="toggleHourly()" role="switch" aria-checked="false" tabindex="0">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span>Hourly</span>
+            </div>
+        </div>
+        
+        <div class="summary">
+            <h3>Overall Market Summary</h3>
+            <div class="data-grid-no-action">
+                <div class="grid-header">Job Title</div>
+                <div class="grid-header">25th Percentile</div>
+                <div class="grid-header">50th Percentile</div>
+                <div class="grid-header">75th Percentile</div>
+                <div id="summaryContent"></div>
+            </div>
+            
+            <div class="wage-entries-section" id="wageEntriesSection">
+                <h4>Wage Entries Used in Calculation</h4>
+                <table class="wage-entries-table" id="wageEntriesTable">
+                    <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Job Title</th>
+                            <th>25th Percentile</th>
+                            <th>50th Percentile</th>
+                            <th>75th Percentile</th>
+                            <th>Aged Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wageEntriesTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="data-sources">
+            <div class="section-title">Market Data Sources</div>
+            <div id="sourcesContainer"></div>
+            <div id="sourceAverages" style="background: #f0f8ff; padding: 10px; border-radius: 4px; margin-bottom: 10px;"></div>
+            <button class="add-btn" onclick="addSource()" aria-label="Add new data source">+ Add New Source</button>
+        </div>
+        
+        <div class="internal-equity">
+            <h3>Internal Equity Reference</h3>
+            <div class="equity-summary" id="equityAverages"></div>
+            <div class="data-grid">
+                <div class="grid-header">Job Title</div>
+                <div class="grid-header">Base Salary</div>
+                <div class="grid-header">Years of Service</div>
+                <div class="grid-header">Action</div>
+                <div class="grid-header"></div>
+                <div id="equityContainer"></div>
+            </div>
+            <button class="add-btn" onclick="addEquityRow()" aria-label="Add internal reference">+ Add Internal Reference</button>
+        </div>
+        
+        <div class="output-section">
+            <h3>Summary Report</h3>
+            <div class="output-box" id="outputBox"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let isHourly = false;
+        let isTiered = false;
+        let sources = [];
+        let equityData = [];
+        let sourceCounter = 0;
+        let equityCounter = 0;
+
+        // Toggle functions
+        window.toggleTiered = function() {
+            isTiered = !isTiered;
+            const toggle = document.getElementById('tieredToggle');
+            toggle.classList.toggle('active', isTiered);
+            toggle.setAttribute('aria-checked', isTiered);
+            
+            sources.forEach(source => {
+                if (isTiered && source.data.length === 1) {
+                    source.data.push(
+                        { title: '', p25: '', p50: '', p75: '' },
+                        { title: '', p25: '', p50: '', p75: '' }
+                    );
+                } else if (!isTiered && source.data.length === 3) {
+                    source.data = [source.data[0]];
+                }
+            });
+            
+            updateDisplay();
+        }
+
+        window.toggleHourly = function() {
+            isHourly = !isHourly;
+            const toggle = document.getElementById('hourlyToggle');
+            toggle.classList.toggle('active', isHourly);
+            toggle.setAttribute('aria-checked', isHourly);
+            updateDisplay();
+        }
+
+        // Source management
+        window.addSource = function() {
+            const source = {
+                id: sourceCounter++,
+                name: `Source ${sources.length + 1}`,
+                publishDate: new Date().toISOString().split('T')[0],
+                ageData: false,
+                data: isTiered ? [
+                    { title: '', p25: '', p50: '', p75: '' },
+                    { title: '', p25: '', p50: '', p75: '' },
+                    { title: '', p25: '', p50: '', p75: '' }
+                ] : [
+                    { title: '', p25: '', p50: '', p75: '' }
+                ]
+            };
+            sources.push(source);
+            updateDisplay();
+        }
+
+        window.removeSource = function(id) {
+            sources = sources.filter(s => s.id !== id);
+            updateDisplay();
+        }
+
+        window.duplicateSource = function(sourceId) {
+            const originalSource = sources.find(s => s.id === sourceId);
+            if (originalSource) {
+                const duplicatedSource = {
+                    id: sourceCounter++,
+                    name: originalSource.name + ' (Copy)',
+                    publishDate: originalSource.publishDate,
+                    ageData: originalSource.ageData,
+                    data: originalSource.data.map(row => ({
+                        title: row.title,
+                        p25: row.p25,
+                        p50: row.p50,
+                        p75: row.p75
+                    }))
+                };
+                sources.push(duplicatedSource);
+                updateDisplay();
+            }
+        }
+
+        // Equity management
+        window.addEquityRow = function() {
+            equityData.push({
+                id: equityCounter++,
+                title: '',
+                base: '',
+                years: ''
+            });
+            updateDisplay();
+        }
+
+        window.removeEquityRow = function(id) {
+            equityData = equityData.filter(e => e.id !== id);
+            updateDisplay();
+        }
+
+        window.duplicateEquityRow = function(id) {
+            const equity = equityData.find(e => e.id === id);
+            if (equity) {
+                const newEquity = {
+                    id: equityCounter++,
+                    title: equity.title,
+                    base: equity.base,
+                    years: equity.years
+                };
+                const index = equityData.indexOf(equity);
+                equityData.splice(index + 1, 0, newEquity);
+                updateDisplay();
+            }
+        }
+
+        // Formatting and calculations
+        window.formatSalary = function(value) {
+            if (!value || isNaN(value)) return 'N/A';
+            const num = parseFloat(value);
+            if (isHourly) {
+                return `$${num.toFixed(2)}/hr`;
+            } else {
+                return `$${num.toFixed(2)}`;
+            }
+        }
+
+        window.updateSourceData = function(sourceId, rowIndex, field, value) {
+            const source = sources.find(s => s.id === sourceId);
+            if (source) {
+                if (['p25', 'p50', 'p75'].includes(field) && value && isNaN(value)) {
+                    alert('Please enter a valid number for salary fields.');
+                    return;
+                }
+                source.data[rowIndex][field] = value;
+                updateSummary();
+                updateOutput();
+            }
+        }
+
+        window.updateEquityData = function(id, field, value) {
+            const equity = equityData.find(e => e.id === id);
+            if (equity) {
+                if (['base', 'years'].includes(field) && value && isNaN(value)) {
+                    alert('Please enter a valid number for salary or years of service.');
+                    return;
+                }
+                equity[field] = value;
+                updateSummary();
+                updateOutput();
+            }
+        }
+
+        window.updateSourceName = function(id, name) {
+            const source = sources.find(s => s.id === id);
+            if (source) {
+                source.name = name.trim() || `Source ${source.id + 1}`;
+                updateSummary();
+                updateOutput();
+            }
+        }
+        
+        window.updateSourceDate = function(id, date) {
+            const source = sources.find(s => s.id === id);
+            if (source) {
+                if (date && new Date(date) > new Date()) {
+                    alert('Publish date cannot be in the future.');
+                    return;
+                }
+                source.publishDate = date;
+                updateSummary();
+                updateOutput();
+            }
+        }
+        
+        window.toggleSourceAging = function(id) {
+            const source = sources.find(s => s.id === id);
+            if (source) {
+                source.ageData = !source.ageData;
+                updateSummary();
+                updateOutput();
+                updateDisplay();
+            }
+        }
+
+        window.calculateAgedValue = function(baseValue, sourceDate, monthsFromNow = 0) {
+            if (!baseValue || isNaN(baseValue) || !sourceDate) return baseValue;
+            
+            const sourcePublishDate = new Date(sourceDate);
+            const currentDate = new Date();
+            currentDate.setMonth(currentDate.getMonth() + monthsFromNow);
+            
+            const monthsDiff = (currentDate.getFullYear() - sourcePublishDate.getFullYear()) * 12 + 
+                             (currentDate.getMonth() - sourcePublishDate.getMonth());
+            
+            if (monthsDiff <= 0) return baseValue;
+            
+            const yearsDiff = monthsDiff / 12;
+            const agingFactor = Math.pow(1.03, yearsDiff);
+            return baseValue * agingFactor;
+        }
+        
+        window.getSourceValue = function(source, field, rowIndex) {
+            const baseValue = parseFloat(source.data[rowIndex][field]);
+            if (!baseValue || isNaN(baseValue)) return 0;
+            
+            if (source.ageData) {
+                return window.calculateAgedValue(baseValue, source.publishDate);
+            }
+            
+            return baseValue;
+        }
+
+        window.calculateSourceAverages = function(monthsFromNow = 0) {
+            if (!isTiered) {
+                let allP25 = [];
+                let allP50 = [];
+                let allP75 = [];
+                let allEntries = [];
+                
+                sources.forEach(source => {
+                    source.data.forEach((row, rowIndex) => {
+                        const p25Value = source.ageData 
+                            ? window.calculateAgedValue(parseFloat(row.p25), source.publishDate, monthsFromNow)
+                            : parseFloat(row.p25);
+                        const p50Value = source.ageData 
+                            ? window.calculateAgedValue(parseFloat(row.p50), source.publishDate, monthsFromNow)
+                            : parseFloat(row.p50);
+                        const p75Value = source.ageData 
+                            ? window.calculateAgedValue(parseFloat(row.p75), source.publishDate, monthsFromNow)
+                            : parseFloat(row.p75);
+                        
+                        // Only include rows that have at least one valid value
+                        if (p25Value > 0 || p50Value > 0 || p75Value > 0) {
+                            allEntries.push({
+                                sourceName: source.name,
+                                jobTitle: row.title || 'N/A',
+                                p25: p25Value > 0 ? p25Value : null,
+                                p50: p50Value > 0 ? p50Value : null,
+                                p75: p75Value > 0 ? p75Value : null,
+                                aged: source.ageData
+                            });
+                        }
+                        
+                        if (p25Value > 0) allP25.push(p25Value);
+                        if (p50Value > 0) allP50.push(p50Value);
+                        if (p75Value > 0) allP75.push(p75Value);
+                    });
+                });
+                
+                return {
+                    p25: allP25.length > 0 ? allP25.reduce((a, b) => a + b, 0) / allP25.length : 0,
+                    p50: allP50.length > 0 ? allP50.reduce((a, b) => a + b, 0) / allP50.length : 0,
+                    p75: allP75.length > 0 ? allP75.reduce((a, b) => a + b, 0) / allP75.length : 0,
+                    count: Math.max(allP25.length, allP50.length, allP75.length),
+                    calculations: {
+                        p25: allP25,
+                        p50: allP50,
+                        p75: allP75
+                    },
+                    entries: allEntries,
+                    tiers: null
+                };
+            } else {
+                // Group data by job title
+                const jobTitleGroups = {};
+                let allEntries = [];
+                
+                sources.forEach(source => {
+                    source.data.forEach((row, index) => {
+                        const title = row.title.trim();
+                        if (title) {
+                            if (!jobTitleGroups[title]) {
+                                jobTitleGroups[title] = {
+                                    p25: [],
+                                    p50: [],
+                                    p75: [],
+                                    tier: index + 1
+                                };
+                            }
+                            
+                            const p25Value = source.ageData 
+                                ? window.calculateAgedValue(parseFloat(row.p25), source.publishDate, monthsFromNow)
+                                : parseFloat(row.p25);
+                            const p50Value = source.ageData 
+                                ? window.calculateAgedValue(parseFloat(row.p50), source.publishDate, monthsFromNow)
+                                : parseFloat(row.p50);
+                            const p75Value = source.ageData 
+                                ? window.calculateAgedValue(parseFloat(row.p75), source.publishDate, monthsFromNow)
+                                : parseFloat(row.p75);
+                            
+                            // Only include rows that have at least one valid value
+                            if (p25Value > 0 || p50Value > 0 || p75Value > 0) {
+                                allEntries.push({
+                                    sourceName: source.name,
+                                    jobTitle: title,
+                                    p25: p25Value > 0 ? p25Value : null,
+                                    p50: p50Value > 0 ? p50Value : null,
+                                    p75: p75Value > 0 ? p75Value : null,
+                                    aged: source.ageData
+                                });
+                            }
+                            
+                            if (p25Value > 0) jobTitleGroups[title].p25.push(p25Value);
+                            if (p50Value > 0) jobTitleGroups[title].p50.push(p50Value);
+                            if (p75Value > 0) jobTitleGroups[title].p75.push(p75Value);
+                        }
+                    });
+                });
+                
+                const tiers = {};
+                Object.keys(jobTitleGroups).forEach(title => {
+                    const group = jobTitleGroups[title];
+                    const tierKey = `tier${group.tier || Object.keys(tiers).length + 1}`;
+                    tiers[title] = {
+                        p25: group.p25.length > 0 ? group.p25.reduce((a, b) => a + b, 0) / group.p25.length : 0,
+                        p50: group.p50.length > 0 ? group.p50.reduce((a, b) => a + b, 0) / group.p50.length : 0,
+                        p75: group.p75.length > 0 ? group.p75.reduce((a, b) => a + b, 0) / group.p75.length : 0,
+                        count: Math.max(group.p25.length, group.p50.length, group.p75.length),
+                        calculations: {
+                            p25: group.p25,
+                            p50: group.p50,
+                            p75: group.p75
+                        }
+                    };
+                });
+                
+                const overallP25 = Object.values(jobTitleGroups).flatMap(group => group.p25);
+                const overallP50 = Object.values(jobTitleGroups).flatMap(group => group.p50);
+                const overallP75 = Object.values(jobTitleGroups).flatMap(group => group.p75);
+                
+                return {
+                    p25: overallP25.length > 0 ? overallP25.reduce((a, b) => a + b, 0) / overallP25.length : 0,
+                    p50: overallP50.length > 0 ? overallP50.reduce((a, b) => a + b, 0) / overallP50.length : 0,
+                    p75: overallP75.length > 0 ? overallP75.reduce((a, b) => a + b, 0) / overallP75.length : 0,
+                    count: Math.max(overallP25.length, overallP50.length, overallP75.length),
+                    calculations: {
+                        p25: overallP25,
+                        p50: overallP50,
+                        p75: overallP75
+                    },
+                    entries: allEntries,
+                    tiers: tiers
+                };
+            }
+        }
+
+        window.calculateEquityAverages = function() {
+            let allBases = [];
+            
+            equityData.forEach(equity => {
+                if (equity.base && !isNaN(equity.base)) {
+                    allBases.push(parseFloat(equity.base));
+                }
+            });
+            
+            return {
+                base: allBases.length > 0 ? allBases.reduce((a, b) => a + b, 0) / allBases.length : 0,
+                count: allBases.length,
+                calculations: allBases
+            };
+        }
+
+        window.updateWageEntriesTable = function() {
+            const sourceAvg = window.calculateSourceAverages();
+            const tableBody = document.getElementById('wageEntriesTableBody');
+            
+            tableBody.innerHTML = '';
+            
+            if (sourceAvg.entries && sourceAvg.entries.length > 0) {
+                sourceAvg.entries.forEach(entry => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${entry.sourceName}</td>
+                        <td>${entry.jobTitle}</td>
+                        <td>${entry.p25 ? window.formatSalary(entry.p25) : 'N/A'}</td>
+                        <td>${entry.p50 ? window.formatSalary(entry.p50) : 'N/A'}</td>
+                        <td>${entry.p75 ? window.formatSalary(entry.p75) : 'N/A'}</td>
+                        <td>${entry.aged ? 'Yes' : 'No'}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="6" style="text-align: center; font-style: italic;">No wage entries found</td>';
+                tableBody.appendChild(row);
+            }
+        }
+
+        window.updateSummary = function() {
+            const summaryContent = document.getElementById('summaryContent');
+            const sourceAverages = document.getElementById('sourceAverages');
+            const equityAverages = document.getElementById('equityAverages');
+            
+            const sourceAvg = window.calculateSourceAverages();
+            const equityAvg = window.calculateEquityAverages();
+            
+            const summaryTitles = new Set();
+            const summaryTierTitles = {};
+            
+            sources.forEach(source => {
+                source.data.forEach((row, index) => {
+                    if (row.title.trim()) {
+                        summaryTitles.add(row.title.trim());
+                        if (isTiered) {
+                            const title = row.title.trim();
+                            if (!summaryTierTitles[title]) {
+                                summaryTierTitles[title] = new Set();
+                            }
+                            summaryTierTitles[title].add(row.title.trim());
+                        }
+                    }
+                });
+            });
+            
+            const titleText = summaryTitles.size > 0 ? Array.from(summaryTitles).join(', ') : 'No titles entered';
+            
+            if (isTiered && sourceAvg.tiers) {
+                summaryContent.innerHTML = Object.keys(sourceAvg.tiers).map(title => `
+                    <div style="grid-column: 1; font-weight: bold; color: #2e7d32;">${title}</div>
+                    <div style="grid-column: 2; text-align: center;">${window.formatSalary(sourceAvg.tiers[title].p25)}</div>
+                    <div style="grid-column: 3; text-align: center;">${window.formatSalary(sourceAvg.tiers[title].p50)}</div>
+                    <div style="grid-column: 4; text-align: center;">${window.formatSalary(sourceAvg.tiers[title].p75)}</div>
+                `).join('');
+            } else {
+                summaryContent.innerHTML = `
+                    <div style="grid-column: 1;">${titleText}</div>
+                    <div style="grid-column: 2; text-align: center;">${window.formatSalary(sourceAvg.p25)}</div>
+                    <div style="grid-column: 3; text-align: center;">${window.formatSalary(sourceAvg.p50)}</div>
+                    <div style="grid-column: 4; text-align: center;">${window.formatSalary(sourceAvg.p75)}</div>
+                `;
+            }
+
+            sourceAverages.innerHTML = `Based on ${sourceAvg.count} data point${sourceAvg.count !== 1 ? 's' : ''}`;
+            equityAverages.innerHTML = `Average Base Salary: ${window.formatSalary(equityAvg.base)} (Based on ${equityAvg.count} employee${equityAvg.count !== 1 ? 's' : ''})`;
+            
+            // Update the wage entries table
+            window.updateWageEntriesTable();
+        }
+
+        window.updateDisplay = function() {
+            const sourcesContainer = document.getElementById('sourcesContainer');
+            const equityContainer = document.getElementById('equityContainer');
+            
+            sourcesContainer.innerHTML = '';
+            sources.forEach(source => {
+                const sourceElement = document.createElement('div');
+                sourceElement.className = 'source';
+                sourceElement.innerHTML = `
+                    <div class="source-header">
+                        <div class="source-header-left">
+                            <input type="text" value="${source.name}" onchange="updateSourceName(${source.id}, this.value)" placeholder="Source name">
+                            <div class="source-date">
+                                <label>Publish Date: </label>
+                                <input type="date" value="${source.publishDate}" onchange="updateSourceDate(${source.id}, this.value)">
+                            </div>
+                            <div class="age-toggle-group">
+                                <span>Age Data</span>
+                                <div class="mini-toggle ${source.ageData ? 'active' : ''}" onclick="toggleSourceAging(${source.id})" role="switch" aria-checked="${source.ageData}" tabindex="0">
+                                    <div class="mini-toggle-slider"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="source-header-right">
+                            <button class="duplicate-btn" onclick="duplicateSource(${source.id})">Duplicate</button>
+                            <button class="remove-btn" onclick="removeSource(${source.id})">Remove</button>
+                        </div>
+                    </div>
+                    <div class="data-grid">
+                        <div class="grid-header">Job Title</div>
+                        <div class="grid-header">25th Percentile</div>
+                        <div class="grid-header">50th Percentile</div>
+                        <div class="grid-header">75th Percentile</div>
+                        <div class="grid-header"></div>
+                        ${source.data.map((row, index) => `
+                            <div class="data-row">
+                                <input type="text" value="${row.title}" onchange="updateSourceData(${source.id}, ${index}, 'title', this.value)" placeholder="Job title">
+                                <input type="number" min="0" value="${row.p25}" onchange="updateSourceData(${source.id}, ${index}, 'p25', this.value)" placeholder="25th">
+                                <input type="number" min="0" value="${row.p50}" onchange="updateSourceData(${source.id}, ${index}, 'p50', this.value)" placeholder="50th">
+                                <input type="number" min="0" value="${row.p75}" onchange="updateSourceData(${source.id}, ${index}, 'p75', this.value)" placeholder="75th">
+                                <div></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                sourcesContainer.appendChild(sourceElement);
+            });
+
+            equityContainer.innerHTML = '';
+            equityData.forEach(equity => {
+                equityContainer.innerHTML += `
+                    <div class="data-row">
+                        <input type="text" value="${equity.title}" onchange="updateEquityData(${equity.id}, 'title', this.value)" placeholder="Job title">
+                        <input type="number" min="0" value="${equity.base}" onchange="updateEquityData(${equity.id}, 'base', this.value)" placeholder="Base salary">
+                        <input type="number" min="0" value="${equity.years}" onchange="updateEquityData(${equity.id}, 'years', this.value)" placeholder="Years">
+                        <div class="row-actions">
+                            <button class="duplicate-btn" onclick="duplicateEquityRow(${equity.id})">Duplicate</button>
+                            <button class="remove-btn" onclick="removeEquityRow(${equity.id})">Remove</button>
+                        </div>
+                        <div></div>
+                    </div>
+                `;
+            });
+
+            updateSummary();
+            updateOutput();
+        }
+
+        window.updateOutput = function() {
+            const outputBox = document.getElementById('outputBox');
+            const mainJobTitle = document.getElementById('mainJobTitle').value || 'Not specified';
+            const sourceAvg = window.calculateSourceAverages();
+            const equityAvg = window.calculateEquityAverages();
+            
+            let output = `<pre>Salary Analysis Report
+Job Title: ${mainJobTitle}
+Date: ${new Date().toLocaleDateString()}
+
+Pay Structure: ${isTiered ? 'Tiered' : 'Non-Tiered'}
+Pay Basis: ${isHourly ? 'Hourly' : 'Annual'}
+
+Market Data Summary (${sourceAvg.count} data point${sourceAvg.count !== 1 ? 's' : ''}):
+`;
+
+            if (isTiered && sourceAvg.tiers) {
+                output += `<table>
+    <tr>
+        <th>Job Title</th>
+        <th>25th Percentile</th>
+        <th>50th Percentile</th>
+        <th>75th Percentile</th>
+        <th>Data Points</th>
+    </tr>`;
+                Object.keys(sourceAvg.tiers).forEach(title => {
+                    output += `    <tr>
+        <td>${title}</td>
+        <td>${window.formatSalary(sourceAvg.tiers[title].p25)} (Avg of [${sourceAvg.tiers[title].calculations.p25.map(n => n.toFixed(2)).join(', ')}])</td>
+        <td>${window.formatSalary(sourceAvg.tiers[title].p50)} (Avg of [${sourceAvg.tiers[title].calculations.p50.map(n => n.toFixed(2)).join(', ')}])</td>
+        <td>${window.formatSalary(sourceAvg.tiers[title].p75)} (Avg of [${sourceAvg.tiers[title].calculations.p75.map(n => n.toFixed(2)).join(', ')}])</td>
+        <td>${sourceAvg.tiers[title].count}</td>
+    </tr>`;
+                });
+                output += `</table>\n`;
+            } else {
+                output += `<table>
+    <tr>
+        <th>Job Title</th>
+        <th>25th Percentile</th>
+        <th>50th Percentile</th>
+        <th>75th Percentile</th>
+        <th>Data Points</th>
+    </tr>
+    <tr>
+        <td>${mainJobTitle}</td>
+        <td>${window.formatSalary(sourceAvg.p25)} (Avg of [${sourceAvg.calculations.p25.map(n => n.toFixed(2)).join(', ')}])</td>
+        <td>${window.formatSalary(sourceAvg.p50)} (Avg of [${sourceAvg.calculations.p50.map(n => n.toFixed(2)).join(', ')}])</td>
+        <td>${window.formatSalary(sourceAvg.p75)} (Avg of [${sourceAvg.calculations.p75.map(n => n.toFixed(2)).join(', ')}])</td>
+        <td>${sourceAvg.count}</td>
+    </tr>
+</table>
+
+Detailed Wage Entries Used in Calculation:
+<table>
+    <tr>
+        <th>Source</th>
+        <th>Job Title</th>
+        <th>25th Percentile</th>
+        <th>50th Percentile</th>
+        <th>75th Percentile</th>
+        <th>Aged Data</th>
+    </tr>`;
+                if (sourceAvg.entries && sourceAvg.entries.length > 0) {
+                    sourceAvg.entries.forEach(entry => {
+                        output += `    <tr>
+        <td>${entry.sourceName}</td>
+        <td>${entry.jobTitle}</td>
+        <td>${entry.p25 ? window.formatSalary(entry.p25) : 'N/A'}</td>
+        <td>${entry.p50 ? window.formatSalary(entry.p50) : 'N/A'}</td>
+        <td>${entry.p75 ? window.formatSalary(entry.p75) : 'N/A'}</td>
+        <td>${entry.aged ? 'Yes' : 'No'}</td>
+    </tr>`;
+                    });
+                } else {
+                    output += `    <tr><td colspan="6" style="text-align: center; font-style: italic;">No wage entries found</td></tr>`;
+                }
+                output += `</table>\n`;
+            }
+            
+            output += `
+Internal Equity Summary:
+  Average Base Salary: ${window.formatSalary(equityAvg.base)} (Avg of [${equityAvg.calculations.map(n => n.toFixed(2)).join(', ')}])
+  Number of Employees: ${equityAvg.count}
+
+Internal Equity Details:
+<table>
+    <tr>
+        <th>Job Title</th>
+        <th>Base Salary</th>
+        <th>Years of Service</th>
+    </tr>`;
+            
+            if (equityData.length > 0) {
+                equityData.forEach(equity => {
+                    if (equity.base && !isNaN(equity.base)) {
+                        output += `    <tr>
+        <td>${equity.title || 'N/A'}</td>
+        <td>${window.formatSalary(equity.base)}</td>
+        <td>${equity.years || 'N/A'}</td>
+    </tr>`;
+                    }
+                });
+            } else {
+                output += `    <tr><td colspan="3" style="text-align: center; font-style: italic;">No internal equity data entered</td></tr>`;
+            }
+            
+            output += `</table>
+
+Projected Salary Aging (3% Annual Increase):
+  Anything older than 24 months should be re-evaluated via compensation analysis
+`;
+            
+            const agingPeriods = [
+                { months: 6, label: '6 Months from Now' },
+                { months: 12, label: '12 Months from Now' },
+                { months: 24, label: '24 Months from Now' }
+            ];
+            
+            agingPeriods.forEach(period => {
+                const agedAvg = window.calculateSourceAverages(period.months);
+                output += `\n${period.label}:\n`;
+                if (isTiered && agedAvg.tiers) {
+                    output += `<table>
+    <tr>
+        <th>Job Title</th>
+        <th>25th Percentile</th>
+        <th>50th Percentile</th>
+        <th>75th Percentile</th>
+    </tr>`;
+                    Object.keys(agedAvg.tiers).forEach(title => {
+                        output += `    <tr>
+        <td>${title}</td>
+        <td>${window.formatSalary(agedAvg.tiers[title].p25)}</td>
+        <td>${window.formatSalary(agedAvg.tiers[title].p50)}</td>
+        <td>${window.formatSalary(agedAvg.tiers[title].p75)}</td>
+    </tr>`;
+                    });
+                    output += `</table>`;
+                } else {
+                    output += `<table>
+    <tr>
+        <th>Job Title</th>
+        <th>25th Percentile</th>
+        <th>50th Percentile</th>
+        <th>75th Percentile</th>
+    </tr>
+    <tr>
+        <td>${mainJobTitle}</td>
+        <td>${window.formatSalary(agedAvg.p25)}</td>
+        <td>${window.formatSalary(agedAvg.p50)}</td>
+        <td>${window.formatSalary(agedAvg.p75)}</td>
+    </tr>
+</table>`;
+                }
+            });
+            
+            output += `\nSources:\n`;
+            sources.forEach(source => {
+                output += `- ${source.name} (Published: ${source.publishDate}, Aging: ${source.ageData ? 'Enabled' : 'Disabled'})\n`;
+            });
+            
+            output += `</pre>`;
+            outputBox.innerHTML = output;
+        }
+
+        window.addEventListener('load', () => {
+            updateDisplay();
+        });
+    </script>
+</body>
+</html>
